@@ -1,4 +1,4 @@
-# zksync-aa-wallet-paymaseter
+# Overview
 Implementation of example codes of account abstraction and paymaster features on zksync. You can find and explore more details in zkSync documentation below.
 
 Only `Paymaster.sol`'s code is differnet from the sample code in tutorials. Especially, Paymaster calculates the actual gas cost in ERC20 term and makes the tx initiator(EOA or aa-wallet) transfer the ERC20 token to Paymaster in exchange for paying gas in ETH to the network, in order for the initiator to be able to pay gas fee in any preferable ERC20 token.  
@@ -9,21 +9,21 @@ Plus, test file `test_all.test.ts` combines the tests of `MAFactory`, `MultiSigA
 - [Tutorial: Account Abstraction](https://v2-docs.zksync.io/dev/tutorials/custom-aa-tutorial.html)
 - [Tutorial: Paymaster](https://v2-docs.zksync.io/dev/tutorials/custom-paymaster-tutorial.html)
 
-## Deployment & Test
+# Deployment & Test
 
 ```shell
 git clone git@github.com:porco-rosso-j/zksync-aa-wallet-paymaster.git
 ```
 
-Enter the repo and install dependencies.
+- Enter the repo and install dependencies.
 ```shell
 cd zksync-aa-wallet-paymaster
 npm i
 ```
-To set-up local environment, Docker and docker-compose should be installed.  
+- To set-up local environment, Docker and docker-compose should be installed.  
 If they are not installed on your computer: [Install](https://docs.docker.com/get-docker/).
 
-To run zkSync local chain, do:
+- To run zkSync local chain, do:
 ```shell
 git clone https://github.com/matter-labs/local-setup.git
 cd local-setup
@@ -31,17 +31,20 @@ cd local-setup
 ```
 [*check details and common errors for running local zksync chain](https://v2-docs.zksync.io/api/hardhat/testing.html#reset-the-zksync-state).  
 
-compile: 
+- compile: 
 ```shell
 npm run compile
 ```
 
-deploy:
+- additional configuration: add .env file `touch .env` and add `NODE_ENV=test` in it. 
+
+- deploy:
 ```shell
-npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
+npx hardhat deploy-zksync --script deploy/<file-name>.ts
+example: npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
 ```
 
-test:
+- test:
 ```shell
 npm run test
 ```
