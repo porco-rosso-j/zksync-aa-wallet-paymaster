@@ -29,7 +29,7 @@ git clone https://github.com/matter-labs/local-setup.git
 cd local-setup
 ./start.sh
 ```
-[*check details and common errors for running local zksync chain](https://v2-docs.zksync.io/api/hardhat/testing.html#reset-the-zksync-state).  
+*check details and common errors for running local zksync chain [here](https://v2-docs.zksync.io/api/hardhat/testing.html#reset-the-zksync-state). 
 
 - compile: 
 ```shell
