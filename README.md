@@ -41,7 +41,10 @@ npm run compile
 - deploy:
 ```shell
 npx hardhat deploy-zksync --script deploy/<file-name>.ts
-example: npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
+```
+example:
+```shell
+npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
 ```
 
 - test:
