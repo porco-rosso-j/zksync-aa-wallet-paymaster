@@ -1,16 +1,21 @@
 import { Wallet, Contract, utils } from "zksync-web3";
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 export async function deployToken(deployer: Deployer): Promise<Contract> {
     const artifact = await deployer.loadArtifact("MyERC20");
     return await deployer.deploy(artifact, ["MyERC20", "MyERC20", 18]);
   }
 
-export async function deployPaymaster(deployer: Deployer, erc20address: string): Promise<Contract> {
-  const artifact = await deployer.loadArtifact("Paymaster");
-  return await deployer.deploy(artifact, [erc20address]);
+export async function deployPaymaster(deployer: Deployer): Promise<Contract> {
+  const artifact = await deployer.loadArtifact("MyPaymaster");
+  return await deployer.deploy(artifact);
+}
+
+export async function deployV3Aggregator(deployer: Deployer, decimals:number, price:BigNumber): Promise<Contract> {
+  const artifact = await deployer.loadArtifact("MockV3Aggregator");
+  return await deployer.deploy(artifact, [decimals, price]);
 }
 
 export async function deployMAFactory(deployer: Deployer): Promise<Contract> {

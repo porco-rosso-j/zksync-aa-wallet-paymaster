@@ -1,5 +1,5 @@
 import { Wallet, Contract, Provider, utils, EIP712Signer, types } from "zksync-web3";
-import { ethers, Bytes } from "ethers";
+import { ethers } from "ethers";
 
 export interface TxParams {
     provider: Provider,
@@ -39,18 +39,23 @@ export interface TxParams {
   
      const sentTx = await txParams.provider.sendTransaction(utils.serialize(tx));
      await sentTx.wait();
+
   }
 
   // Construct PaymasterParams
    async function makePaymasterParams(txParams:TxParams) {
     let paymasterParams;
 
+    const token_price = await txParams.paymaster.getETHPerToken(txParams.erc20.address)
+    const AbiCoder = new ethers.utils.AbiCoder()
+    const input = AbiCoder.encode(["uint"], [token_price])
+
     if (txParams.isApprovalBased) {
         paymasterParams = utils.getPaymasterParams(txParams.paymaster.address, {
             type: "ApprovalBased",
             token: txParams.erc20.address,
-            minimalAllowance: await txParams.paymaster.minTokenFee(),
-            innerInput: new Uint8Array,
+            minimalAllowance: (await txParams.paymaster.tokens(txParams.erc20.address)).minFee,
+            innerInput: input,
            });       
         return paymasterParams
     } else {

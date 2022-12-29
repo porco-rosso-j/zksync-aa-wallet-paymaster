@@ -4,11 +4,18 @@ import { IPaymaster, ExecutionResult } from '@matterlabs/zksync-contracts/l2/sys
 import { IPaymasterFlow } from '@matterlabs/zksync-contracts/l2/system-contracts/interfaces/IPaymasterFlow.sol';
 import { TransactionHelper, Transaction } from '@matterlabs/zksync-contracts/l2/system-contracts/TransactionHelper.sol';
 import '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract Paymaster is IPaymaster {
-    uint public minTokenFee;
-    uint public ETH_PER_TOKEN; // 0.000825 {eth/token}, suppose token == usd stable
-    address public allowedToken;
+contract MyPaymaster is IPaymaster {
+    address public owner;
+
+    struct TokenInfo {
+        uint minFee;
+        bool sponsored;
+        address pricefeed;
+    }
+
+    mapping (address => TokenInfo ) public tokens;
 
     modifier onlyBootloader() {
         require(msg.sender == BOOTLOADER_FORMAL_ADDRESS, "Only bootloader can call this method");
@@ -16,8 +23,13 @@ contract Paymaster is IPaymaster {
         _;
     }
 
-    constructor(address _erc20) {
-        allowedToken = _erc20;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner is allowed");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
     }
 
     function validateAndPayForPaymasterTransaction(bytes32, bytes32, Transaction calldata _transaction) 
@@ -29,14 +41,13 @@ contract Paymaster is IPaymaster {
 
         if (paymasterInputSelector == IPaymasterFlow.approvalBased.selector) {
 
-            (address token, uint minAllonwance, bytes memory data) 
+            (address token, , ) 
             = abi.decode(_transaction.paymasterInput[4:], (address, uint, bytes));
             address user = address(uint160(_transaction.from));
-            require(token == allowedToken, "Invalid Token");
-            require(minAllonwance >= minTokenFee, "Insufficient Allowance");
+            require(tokens[token].sponsored == true, "Invalid Token");
 
             (uint token_fee, uint eth_fee)
-             = calcuFees(_transaction.ergsLimit, _transaction.maxFeePerErg);
+             = calcuFees(_transaction.ergsLimit, _transaction.maxFeePerErg, token);
 
             receiveToken(token, token_fee, user);
             payErgs(eth_fee);
@@ -52,18 +63,15 @@ contract Paymaster is IPaymaster {
     }
 
     // token_fee: token amount for gas == eth amount for gas / {eth/token} rate
-    function calcuFees(uint _ergsLimit, uint _maxFeePerErg) internal view returns(uint, uint) {
+    function calcuFees(uint _ergsLimit, uint _maxFeePerErg, address _token) internal view returns(uint, uint) {
         uint eth_fee = _ergsLimit * _maxFeePerErg;
-        uint token_fee = eth_fee * 1e18 / getETHPerToken();
+        uint token_fee = eth_fee * 1e18 / getETHPerToken(_token);
         return (token_fee, eth_fee);
     }
 
-    // require1: check user's allowance for paymaster
     // transrfer: send token from user to paymster(address(this))
-    // require2: check if paymaster received sufficient amount of token 
+    // require: check if paymaster received sufficient amount of token 
     function receiveToken(address _token, uint _token_amt, address _user) internal {
-        uint allowance = IERC20(_token).allowance(_user, address(this));
-        require(allowance >= _token_amt, "The user didn't provide enough allowance");
 
         uint balanceBefore = IERC20(_token).balanceOf(address(this));
         IERC20(_token).transferFrom(_user, address(this), _token_amt);
@@ -75,18 +83,34 @@ contract Paymaster is IPaymaster {
         require(success, "gas payment failed");
     }
 
-    function setMinTokenFee(uint _amount) public {
-        minTokenFee = _amount;
+
+    // Management Functions
+    function addToken(address _token, uint _amount, bool _sponsored, address _feed) public onlyOwner {
+        tokens[_token].minFee = _amount;
+        tokens[_token].sponsored = _sponsored;
+        tokens[_token].pricefeed = _feed;
     }
 
-    function setETHPerToken(uint _rate) public { // OnlyOwner in production
-        ETH_PER_TOKEN = _rate;
+    function addMinTokenFee(address _token, uint _amount) public onlyOwner {
+        tokens[_token].minFee = _amount;
     }
 
-    function getETHPerToken() public view returns(uint) {
-        // issue: this function should call an oracle in production
-        return ETH_PER_TOKEN;
+    function addTokenFeed(address _token, address _feed) public onlyOwner {
+        require(tokens[_token].sponsored == true, "token not allowed");
+        tokens[_token].pricefeed = _feed;
     }
+
+    function getETHPerToken(address _token) public view returns(uint) {
+        require(tokens[_token].pricefeed != address(0), "the token doesn't have pricefeed");
+        (, int price, , ,) = AggregatorV3Interface(tokens[_token].pricefeed).latestRoundData();
+        return uint(price);
+    }
+
+    /*
+    function swapTokenForETH(address _token, uint _amount) public onlyOwner {
+        IUniswapRouterV2(uni_router).swap...
+    }
+    */
 
     function postOp(
         bytes calldata _context,

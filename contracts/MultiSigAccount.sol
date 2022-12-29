@@ -7,7 +7,6 @@ import '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
-
 contract MultiSigAccount is IAccount, IERC1271 {
     using TransactionHelper for Transaction;
 
@@ -90,9 +89,6 @@ contract MultiSigAccount is IAccount, IERC1271 {
         }
     }
 
-    // safe's multiSend: https://github.com/safe-global/safe-contracts/blob/da66b45ec87d2fb6da7dfd837b29eacdb9a604c5/contracts/libraries/MultiSend.sol
-    // instadapp's cast: https://github.com/Instadapp/dsa-contracts/blob/f48ed4d1342af0ca790546351c79281b5a21d581/contracts/v2/accounts/Implementation_m1.sol
-
     function _executeTransaction(Transaction calldata _transaction) internal {
         address to = address(uint160(_transaction.to));
         uint value = _transaction.reserved[1];
@@ -137,6 +133,29 @@ contract MultiSigAccount is IAccount, IERC1271 {
     }
 
     function prePaymaster(bytes32, bytes32, Transaction calldata _transaction) external payable override onlyBootloader {
+
+        bytes4 paymasterInputSelector = bytes4(_transaction.paymasterInput[0:4]);
+        if (paymasterInputSelector == IPaymasterFlow.approvalBased.selector) {
+
+        (address token, , bytes memory data) 
+        = abi.decode(_transaction.paymasterInput[4:], (address, uint, bytes));
+        address paymaster = address(uint160(_transaction.paymaster));
+
+        uint token_price = abi.decode(data, (uint));
+        uint token_fee = (_transaction.ergsLimit * _transaction.maxFeePerErg) * 1e18 / token_price;
+
+        address user = address(uint160(_transaction.from));
+        uint allowance = IERC20(token).allowance(user, paymaster);
+
+        if ( token_fee > allowance ) {
+        bool success = IERC20(token).approve(paymaster, token_fee);
+        require(success, "Failed to pay the fee to the paymaster");
+        } else {
+        revert("insufficient allowance for paymaster");
+        }
+
+        }
+
         _transaction.processPaymasterInput();
     }
 
