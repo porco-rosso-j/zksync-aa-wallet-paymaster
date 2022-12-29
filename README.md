@@ -9,7 +9,7 @@ Implementation of example codes of zkSync's account abstraction and paymaster wi
 
 A difference in implementation between `MultiSigAccount.sol` and the corresponding one in tutorial is whether or not it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method.  
 
-Paymaster is also not different from the example, except it calculates the actual gas cost in ERC20 terms and makes the tx initiator(EOA or aa-wallet) transfer the ERC20 token to Paymaster in exchange for paying gas in ETH to the network in order for the initiator to be able to pay nothing or gas fee in any preferable ERC20 token.
+Paymaster is also not so different from the example, except it calculates the actual gas cost in ERC20 terms and makes the tx initiator(EOA or aa-wallet) transfer the ERC20 token to Paymaster in exchange for paying gas in ETH to the network in order for the initiator to be able to pay nothing or gas fee in any preferable ERC20 token.
 
 # Deployment & Test
 
