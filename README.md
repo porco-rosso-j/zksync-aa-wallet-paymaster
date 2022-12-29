@@ -59,9 +59,5 @@ npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
 - test:
 
 ```shell
-npm run test:integration // executes all 
-```
-or 
-```shell
-npm run test:unit // account.test.ts and paymaster.test.ts
+npm run test:integration  
 ```
