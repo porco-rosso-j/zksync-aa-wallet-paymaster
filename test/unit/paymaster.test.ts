@@ -6,7 +6,7 @@ import { Wallet, Provider, Contract, utils } from "zksync-web3";
 import * as hre from "hardhat";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 import { BigNumber, ethers } from "ethers";
-const rich_wallet = require('../local-setup/rich-wallets');
+const rich_wallet = require('../../local-setup/rich-wallets');
 
 const dev_pk = rich_wallet[0].privateKey
 const wallet2 = rich_wallet[1].address
