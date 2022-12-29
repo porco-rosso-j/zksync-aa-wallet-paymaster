@@ -23,12 +23,4 @@ contract MyERC20 is ERC20 {
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
-
-    function getApproveData(address _spender, uint _amount) external pure returns (bytes memory) {
-        return abi.encodeWithSelector(this.approve.selector, _spender, _amount);
-    }
-
-    function getTransferData(address _recepient, uint _amount) external pure returns (bytes memory) {
-        return abi.encodeWithSelector(this.transfer.selector, _recepient, _amount);
-    }
 }
