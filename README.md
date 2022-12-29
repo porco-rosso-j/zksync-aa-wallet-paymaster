@@ -7,7 +7,7 @@ Implementation of example codes of zkSync's account abstraction and paymaster wi
 - [Tutorial: Account Abstraction](https://v2-docs.zksync.io/dev/tutorials/custom-aa-tutorial.html)
 - [Tutorial: Paymaster](https://v2-docs.zksync.io/dev/tutorials/custom-paymaster-tutorial.html)
 
-A difference in implementation between `MultiSigAccount.sol` and the corresponding one in tutorial is whether or not it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which store contract addresses and functions, respectively. As such, in a batched transaction, msg.data isn't single hexlified method data but encoded with AbiCoder.encode() method.
+A difference in implementation between `MultiSigAccount.sol` and the corresponding one in tutorial is whether or not it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method.  
 
 Paymaster is also not different from the example, except it calculates the actual gas cost in ERC20 terms and makes the tx initiator(EOA or aa-wallet) transfer the ERC20 token to Paymaster in exchange for paying gas in ETH to the network in order for the initiator to be able to pay nothing or gas fee in any preferable ERC20 token.
 
@@ -59,6 +59,9 @@ npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
 - test:
 
 ```shell
-npm run test:unit // or
-npm run test:integration
+npm run test:integration // executes all 
+```
+or 
+```shell
+npm run test:unit // account.test.ts and paymaster.test.ts
 ```
