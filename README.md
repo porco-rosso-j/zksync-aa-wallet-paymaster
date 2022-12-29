@@ -1,5 +1,6 @@
 # Overview
 
+
 Implementation of example codes of zkSync's account abstraction and paymaster with batched transaction features. You can find and explore more details in zkSync documentation below.
 
 - [zkSync Developer Doc](https://v2-docs.zksync.io/dev/)
@@ -23,8 +24,8 @@ cd zksync-aa-wallet-paymaster
 npm i
 ```
 
-- To set-up local environment, Docker and docker-compose should be installed.  
-  If they are not installed on your computer: [Install](https://docs.docker.com/get-docker/).
+- To set-up local environment, Docker and docker-compose should be installed.    
+  If they are not installed on your computer: [Install](https://docs.docker.com/get-docker/).  
 
 - To run zkSync local chain, do:
 
@@ -51,7 +52,6 @@ npx hardhat deploy-zksync --script deploy/<file-name>.ts
 ```
 
 example:
-
 ```shell
 npx hardhat deploy-zksync --script deploy/deploy-paymaster.ts
 ```
