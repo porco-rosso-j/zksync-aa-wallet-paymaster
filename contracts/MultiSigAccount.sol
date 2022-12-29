@@ -49,8 +49,49 @@ contract MultiSigAccount is IAccount, IERC1271 {
     }
 
     function executeTransaction(bytes32, bytes32, Transaction calldata _transaction) external payable override onlyBootloader {
-        _executeTransaction(_transaction);
+        if (isBatched(_transaction)) {
+            _executeBatchTransaction(_transaction);
+        } else {
+            _executeTransaction(_transaction);
+        }
     }
+    
+    function isBatched(Transaction calldata _transaction) internal pure returns(bool) {
+        bytes memory data = _transaction.data;
+
+        if ( _transaction.to == _transaction.from && data.length != 0) {
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+    function _executeBatchTransaction(Transaction calldata _transaction) internal {
+
+        (address[] memory targets, bytes[] memory methods) 
+        = abi.decode(_transaction.data, (address[], bytes[]));
+
+        uint value;
+        address to;
+        bytes memory data;
+        bool success;
+
+        for (uint i = 0; i < targets.length; i++) {
+            value = i == 0 ? _transaction.reserved[1] : 0;
+
+            to = targets[i];
+            data = methods[i];
+
+            assembly { 
+                success := call(gas(), to, value, add(data, 0x20), mload(data), 0, 0)
+            }
+
+            require(success, "MultiCall Failed");
+        }
+    }
+
+    // safe's multiSend: https://github.com/safe-global/safe-contracts/blob/da66b45ec87d2fb6da7dfd837b29eacdb9a604c5/contracts/libraries/MultiSend.sol
+    // instadapp's cast: https://github.com/Instadapp/dsa-contracts/blob/f48ed4d1342af0ca790546351c79281b5a21d581/contracts/v2/accounts/Implementation_m1.sol
 
     function _executeTransaction(Transaction calldata _transaction) internal {
         address to = address(uint160(_transaction.to));
@@ -103,5 +144,7 @@ contract MultiSigAccount is IAccount, IERC1271 {
         assert(msg.sender != BOOTLOADER_FORMAL_ADDRESS);
     }
 
+    fallback() external payable {
+    }
 
 }

@@ -35,11 +35,17 @@ contract Paymaster is IPaymaster {
             require(token == allowedToken, "Invalid Token");
             require(minAllonwance >= minTokenFee, "Insufficient Allowance");
 
-            (uint token_fee, uint eth_fee) = calcuFees(_transaction.ergsLimit, _transaction.maxFeePerErg);
+            (uint token_fee, uint eth_fee)
+             = calcuFees(_transaction.ergsLimit, _transaction.maxFeePerErg);
 
             receiveToken(token, token_fee, user);
             payErgs(eth_fee);
 
+        } else if (paymasterInputSelector == IPaymasterFlow.general.selector) {
+
+            uint eth_fee = _transaction.ergsLimit * _transaction.maxFeePerErg;
+            payErgs(eth_fee);
+        
         } else {
             revert("Unsupported paymaster flow");
         }

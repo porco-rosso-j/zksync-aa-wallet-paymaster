@@ -5,7 +5,9 @@
     "compile": "npx hardhat compile",
     "script": "node scripts/script.js",
     "deploy": "npx hardhat deploy-zksync",
-    "test": "npx hardhat test test/*.test.ts"
+    "test": "npx hardhat test test/*.test.ts",
+    "test:unit": "npx hardhat test test/unit/*.test.ts",
+    "test:integration": "npx hardhat test test/integration/*.test.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.1",
