@@ -8,9 +8,9 @@ contract SpendingManager is ISpendingManager {
 
     using BytesLib for bytes;
 
-    bytes4 constant ERC20_TRANSFER_SELECTOR = 0xa9059cbb;
+    bytes4 constant public ERC20_TRANSFER_SELECTOR = 0xa9059cbb;
 
-    uint public DAILY_LIMIT = 24 hours;
+    uint public ONE_DAY = 24 hours;
 
     struct Limit {
         uint limit;
@@ -23,7 +23,7 @@ contract SpendingManager is ISpendingManager {
 
     function getLimit(address _account, address _token) public view returns(Limit memory) {
         Limit memory limit = limits[_account][_token];
-        if (block.timestamp >= limit.resetTime + DAILY_LIMIT && limit.isActive) {
+        if (block.timestamp >= limit.resetTime + ONE_DAY && limit.isActive) {
             limit.resetTime = block.timestamp;
             limit.spent = 0;
         }
@@ -31,19 +31,21 @@ contract SpendingManager is ISpendingManager {
     }
 
     function setSpendingLimit(address _account, address _token, uint _amount) external {
+        require(msg.sender == _account, "Invalid caller");
         require(_account != address(0), "Invalid account"); 
         require(_amount != 0, "Invalid amount");
         _updateLimit(_account, _token, _amount, 0, block.timestamp, true);
     } 
 
     function removeSpendingLimit(address _account, address _token) external {
+        require(msg.sender == _account, "Invalid caller");
         require(_account != address(0), "Invalid account");  
         _updateLimit(_account, _token, 0, 0, 0, false);
     }
 
     function _updateLimit(address _account, address _token, uint _limit, uint _spent, uint _resetTime, bool _isActive) private {
         Limit storage limit = limits[_account][_token];
-        require(limit.resetTime + DAILY_LIMIT <= block.timestamp, "Invalid update");
+        require(limit.resetTime + ONE_DAY <= block.timestamp, "Invalid update");
 
         limit.limit = _limit;
         limit.spent = _spent;
@@ -75,9 +77,9 @@ contract SpendingManager is ISpendingManager {
         limits[_account][_token] = limit;
     }
 
-    // testing purpose:  set it to 30 sec for testing.
-    function setDailyLimit(uint _time) public {
-        DAILY_LIMIT = _time;
+    // testing purpose: can set it to 10~30 sec for testing.
+    function changeONE_DAY(uint _time) public {
+        ONE_DAY = _time;
     }
 
 }

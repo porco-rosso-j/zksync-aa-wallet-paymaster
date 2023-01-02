@@ -10,6 +10,7 @@ import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 const rich_wallet = require('../../local-setup/rich-wallets');
 
 const ETH_ADDRESS = "0x000000000000000000000000000000000000800A"
+const SLEEP_TIME = 10000 // 10 sec
 
 import { toBN } from "./utils/number"
 import {
@@ -21,7 +22,6 @@ import {
     deployAccount
 } from "./utils/deploy"
 import { TxParams, sendAATxViaPaymaster } from "./utils/sendtx"
-import { sleep } from "zksync-web3/build/src/utils";
 
 const dev_pk = rich_wallet[0].privateKey
 const dev2_pk = rich_wallet[1].privateKey
@@ -86,14 +86,14 @@ before(async () => {
           toBN("100"))
       ).wait()
 
-      // Modify DailyLimit from 24horus to 15 seconds for the sake of testing.
+      // Modify ONE_DAY from 24horus to 10 seconds for the sake of testing.
       await(
-        await spendingManager.setDailyLimit(15)
+        await spendingManager.changeONE_DAY(10)
       ).wait()
   
   })
   
-  describe.skip("Deployment & Setup", function () {
+  describe("Deployment & Setup", function () {
 
     it("Deployment: Should deploy ERC20, Paymaster, Account, Spending Manager correctly", async function () {
   
@@ -101,6 +101,9 @@ before(async () => {
       expect(await erc20.decimals()).to.equal(18)
   
       expect(await paymaster.owner()).to.equal(wallet.address)
+
+      expect((await spendingManager.ONE_DAY()).toNumber()).to.equal(10)
+      expect(await spendingManager.ERC20_TRANSFER_SELECTOR()).to.equal("0xa9059cbb")
   
       expect(await pricefeed.decimals()).to.equal(18)
       expect(await pricefeed.latestAnswer()).to.equal(toBN("0.0008"))
@@ -234,7 +237,7 @@ before(async () => {
       await expect(txReceipt.wait()).to.be.reverted
     }
 
-    await sleep(15000); 
+    await utils.sleep(SLEEP_TIME); 
 
     if (Math.floor(Date.now()/ 1000) >= resetTime + 15) { // after 15 seconds has passed
         const txReceipt = await sendAATxViaPaymaster(txParams)
@@ -356,7 +359,7 @@ before(async () => {
       await expect(txReceipt.wait()).to.be.reverted
     }
 
-    await sleep(15000); 
+    await utils.sleep(SLEEP_TIME); 
 
     if (Math.floor(Date.now()/ 1000) >= resetTime + 15) { // after 15 seconds has passed
         const txReceipt = await sendAATxViaPaymaster(txParams)
@@ -403,7 +406,7 @@ before(async () => {
     const txReceipt0 = await sendAATxViaPaymaster(txParams0)
     await expect(txReceipt0.wait()).to.be.reverted
 
-    await sleep(15000); 
+    await utils.sleep(SLEEP_TIME); 
 
     // Increase Limit
     let tx1 = await spendingManager.populateTransaction.setSpendingLimit(account.address, ETH_ADDRESS, toBN("15"))
@@ -430,7 +433,7 @@ before(async () => {
 
     await consoleLimit(limit)
     await getBalances()
-    await sleep(15000);
+    await utils.sleep(SLEEP_TIME); 
 
   })
 
@@ -447,7 +450,7 @@ before(async () => {
     const txReceipt0 = await sendAATxViaPaymaster(txParams0)
     await expect(txReceipt0.wait()).to.be.reverted
 
-    await sleep(15000); 
+    await utils.sleep(SLEEP_TIME); 
 
     // Increase Limit
     let tx1 = await spendingManager.populateTransaction.removeSpendingLimit(account.address, ETH_ADDRESS)
@@ -474,7 +477,7 @@ before(async () => {
 
     await consoleLimit(limit)
     await getBalances()
-    await sleep(15000);
+    await utils.sleep(SLEEP_TIME); 
 
   })
 
@@ -509,27 +512,6 @@ before(async () => {
 
   })
 })
-
-    /*
-    1: Add addSpendingLimit for ether and ERC20 respectively
-    2: executeTransaction ETH 
-     * should go ok
-       - expect1: sender & recepiet balances 
-       - expect2: changes in account's Allowance values 
-    
-    * should go ok after changes in the allowance
-       - expect1: resetAllowance 
-
-    * should revert 
-       - revert1: "insufficient allowance for 'trnasfer()' with the second transfer
-       - revert2: "Allowance has expired" in decreaseSpendingLimit with advanceTime()
-       - revert3: "Allowance hasn't expired" in addSpendingLimit with further advanceTime()
-       - revert4: removeSpendingLimit -> resetAllowance
-    
-    3: executeTransaction ERC20
-
-    */
-
 
 const getParams = async function (_isApprovalBased:boolean, _isBatched:boolean, _txData:any): Promise<TxParams> {
   let txParams:TxParams = {
