@@ -6,16 +6,21 @@ import '@matterlabs/zksync-contracts/l2/system-contracts/TransactionHelper.sol';
 import '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
+import "./interfaces/ISpendingManager.sol";
 
 contract MultiSigAccount is IAccount, IERC1271 {
     using TransactionHelper for Transaction;
 
+    bytes4 constant EIP1271_SUCCESS_RETURN_VALUE = 0x1626ba7e;
+
+    ISpendingManager public spendingManager;
     address public owner1;
     address public owner2;
 
-    constructor(address _owner1, address _owner2) {
+    constructor(address _owner1, address _owner2, ISpendingManager _spendingManager) {
         owner1 = _owner1;
         owner2 = _owner2;
+        spendingManager = _spendingManager;
     }
 
     modifier onlyBootloader() {
@@ -67,19 +72,20 @@ contract MultiSigAccount is IAccount, IERC1271 {
     }
     function _executeBatchTransaction(Transaction calldata _transaction) internal {
 
-        (address[] memory targets, bytes[] memory methods) 
-        = abi.decode(_transaction.data, (address[], bytes[]));
+        (address[] memory targets, bytes[] memory methods, uint[] memory values) 
+        = abi.decode(_transaction.data, (address[], bytes[], uint[]));
 
-        uint value;
         address to;
         bytes memory data;
+        uint value;
+
         bool success;
 
         for (uint i = 0; i < targets.length; i++) {
-            value = i == 0 ? _transaction.reserved[1] : 0;
 
             to = targets[i];
             data = methods[i];
+            value = values[i];
 
             assembly { 
                 success := call(gas(), to, value, add(data, 0x20), mload(data), 0, 0)
@@ -90,9 +96,13 @@ contract MultiSigAccount is IAccount, IERC1271 {
     }
 
     function _executeTransaction(Transaction calldata _transaction) internal {
+
+        address from = address(uint160(_transaction.from));
         address to = address(uint160(_transaction.to));
         uint value = _transaction.reserved[1];
         bytes memory data = _transaction.data;
+
+        spendingManager.checkSpendingLimit(from, to, value, data);
 
         if(to == address(DEPLOYER_SYSTEM_CONTRACT)) {
             SystemContractsCaller.systemCallWithPropagatedRevert(
@@ -113,10 +123,13 @@ contract MultiSigAccount is IAccount, IERC1271 {
 
     function executeTransactionFromOutside(Transaction calldata _transaction) external payable {
         _validateTransaction(bytes32(0), _transaction);
-        _executeTransaction(_transaction);
-    }
 
-    bytes4 constant EIP1271_SUCCESS_RETURN_VALUE = 0x1626ba7e;
+        if (isBatched(_transaction)) {
+            _executeBatchTransaction(_transaction);
+        } else {
+            _executeTransaction(_transaction);
+        }
+    }
 
     function isValidSignature(bytes32 _hash, bytes calldata _signature) public override view returns(bytes4) {
         require(_signature.length == 130, "Signature length is incorrect");
@@ -163,7 +176,6 @@ contract MultiSigAccount is IAccount, IERC1271 {
         assert(msg.sender != BOOTLOADER_FORMAL_ADDRESS);
     }
 
-    fallback() external payable {
-    }
+    fallback() external payable { }
 
 }

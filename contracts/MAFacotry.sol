@@ -10,12 +10,12 @@ contract MAFactory {
         maBytecodeHash = _maBytecodeHash;
     }
 
-    function deployAccount(bytes32 salt, address owner1, address owner2) external returns (address accountAddress) {
+    function deployAccount(bytes32 salt, address owner1, address owner2, address sm_manager) external returns (address accountAddress) {
         (bool success, bytes memory returnData) = SystemContractsCaller.systemCallWithReturndata(
             uint32(gasleft()), address(DEPLOYER_SYSTEM_CONTRACT), uint128(0), 
             abi.encodeCall(
                 DEPLOYER_SYSTEM_CONTRACT.create2Account, 
-                (salt, maBytecodeHash, abi.encode(owner1, owner2))
+                (salt, maBytecodeHash, abi.encode(owner1, owner2, sm_manager))
                 )
         );
 
