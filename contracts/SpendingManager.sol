@@ -81,37 +81,3 @@ contract SpendingManager is ISpendingManager {
     }
 
 }
-
-
-/*
-
-garbages
-
-    function getETHAddress() public pure returns(address) {
-        return address(ETH_TOKEN_SYSTEM_CONTRACT);
-    }
-
-    function getBytes(bytes calldata _data) public pure returns(bytes4) {
-        bytes4 result = BytesLib.getSelector(_data);
-        return result;
-    }
-
-        // ERC20 transfer
-        if (bytes4(keccak256(bytes(_data))) == bytes4(keccak256(bytes("0xa9059cbb")))) { // abi.encodeWithSelector();
-          (, uint amount) = decodeCalldataParams.decodeVaribales(_data);
-          consumeSpendingLimit(_account, _token, amount);
-        } 
-
-    function removeSpendingLimit(address _account, address _token) external {
-        Allowance memory allowance = getAllowance(_account, _token);
-        resetAllowance(allowance, _account, _token);
-    }
-
-
-    function decreaseSpendingLimit() {
-        if (allowance.spent == allowance.limit ) {
-            resetAllowance(allowance, _account, _token);
-        }
-    }
-
-*/
