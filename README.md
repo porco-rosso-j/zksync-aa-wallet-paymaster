@@ -1,7 +1,6 @@
 # Overview
 
-
-Implementation of example codes of zkSync's account abstraction and paymaster with a batched transaction feature. You can find and explore more details about zkSync and those features in the documentation below.
+An implementation of zkSync's account abstraction and paymaster with a batched transaction and daily spending limit feature. You can find and explore more details about zkSync and those features in the documentation below.
 
 - [zkSync Developer Doc](https://v2-docs.zksync.io/dev/)
 - [Account Abstraction](https://v2-docs.zksync.io/dev/developer-guides/aa.html#introduction)
@@ -10,17 +9,20 @@ Implementation of example codes of zkSync's account abstraction and paymaster wi
 
 ## Developments
 
-The belows are the description of the notable improvements which make this implementation differ from example codes in the tutorial.
+### Account
+zkSync Account Abstraction contract wallet. Architecture is inspired by Gnosis Safe.
 
-### MultiSigAccount
+#### Batch transaction 
+`Account.sol` has multicall feature so that it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method. 
 
-`MultiSigAccount.sol` has multicall feature so that it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method. 
+#### Sponsored Transaction
+As zksync-unique `approvalBased` paymaster flow is supported, `MyPaymaster.sol` allows the account to both proceed gas-sponsored transcations and gas payments in ERC20. Also, it calculates the actual gas cost in ERC20 terms with the price data retrieved from chainlink oracle. 
 
-Plus, `prePaymaster()` supports `approvalBased` paymaster flow in order for accounts to not have to send a separate tx to approve paymaster before any transaction that requires it to pay in ERC20 token.
+#### Spending limit 
+The daily-spending limit feature can be enabled for the account, where it refuses the account to spend in ETH/ERC20 more than a configured limit amount. 
 
-### MyPaymaster
 
-Accounts are able to pay nothing or gas fee in any preferable ERC20 token by asking Paymaster paying gas fee in ETH to the network. Unlike tutorial example, `MyPaymaster.sol` in this implementation supports multiple ERC20 tokens for sponsored transations, and also it calculates the actual gas cost in ERC20 terms with the price data retrieved from chainlink oracle. 
+*Currently, deployment and test in this repo are depreciated*
 
 ## Deployment & Test
 
