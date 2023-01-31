@@ -16,7 +16,7 @@ The belows are the description of the notable improvements which make this imple
 
 `MultiSigAccount.sol` has multicall feature so that it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method. 
 
-Plus, `prePaymaster()` supports `approvalBased` paymaster flow in order for accounts to not have to send a separate tx to approve paymaster before any transaction that requires it to pay in ERC20 token. Rather, prePaymaster enables accounts to approve paymaster in the same transaction where it performs arbitrary executions like batched tx.  
+Plus, `prePaymaster()` supports `approvalBased` paymaster flow in order for accounts to not have to send a separate tx to approve paymaster before any transaction that requires it to pay in ERC20 token.
 
 ### MyPaymaster
 
