@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 library BytesLib {
 
-        function decodeArgs(bytes memory _calldata) internal pure returns(address, uint) {
+        function decodeERC20TransferArgs(bytes memory _calldata) internal pure returns(address, uint) {
         bytes memory data = extractCalldata(_calldata);
         (address recepient, uint amount) = abi.decode(data, (address, uint));
         return (recepient, amount);
@@ -31,11 +31,11 @@ library BytesLib {
         return data;
     }
 
-    function getSelector(bytes calldata _data) internal pure returns(bytes4) {
+    function getSelector(bytes memory _data) internal pure returns(bytes4) {
 
         bytes4 selector;
         assembly {
-           selector := calldataload(_data.offset)
+           selector := calldataload(_data)
         }
         return selector;
     }

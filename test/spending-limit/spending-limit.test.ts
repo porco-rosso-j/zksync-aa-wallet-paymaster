@@ -10,7 +10,7 @@ import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 const rich_wallet = require('../../local-setup/rich-wallets');
 
 const ETH_ADDRESS = "0x000000000000000000000000000000000000800A"
-const SLEEP_TIME = 10000 // 10 sec
+const SLEEP_TIME = 10 // 10 sec
 
 import { toBN } from "./utils/number"
 import {
@@ -232,14 +232,16 @@ before(async () => {
 
     const resetTime = ((await spendingManager.getLimit(account.address, ETH_ADDRESS)).resetTime).toNumber()
 
-    if (Math.floor(Date.now()/ 1000) <= resetTime + 15) { // before 15 seconds has passed
+    if (Math.floor(Date.now()/ 1000) <= resetTime + SLEEP_TIME) { // before 15 seconds has passed
       const txReceipt = await sendAATxViaPaymaster(txParams)
       await expect(txReceipt.wait()).to.be.reverted
     }
 
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
+    //await provider.send(`evem_increaseTime`, [parseInt((10).toString())])
+    //await provider.send(`evm_mine`, [])
 
-    if (Math.floor(Date.now()/ 1000) >= resetTime + 15) { // after 15 seconds has passed
+    if (Math.floor(Date.now()/ 1000) >= resetTime + SLEEP_TIME) { // after 15 seconds has passed
         const txReceipt = await sendAATxViaPaymaster(txParams)
         await txReceipt.wait()
     }
@@ -354,14 +356,14 @@ before(async () => {
 
     const resetTime = ((await spendingManager.getLimit(account.address, erc20.address)).resetTime).toNumber()
 
-    if (Math.floor(Date.now()/ 1000) <= resetTime + 15) { // before 15 seconds has passed
+    if (Math.floor(Date.now()/ 1000) <= resetTime + SLEEP_TIME) { // before 15 seconds has passed
       const txReceipt = await sendAATxViaPaymaster(txParams)
       await expect(txReceipt.wait()).to.be.reverted
     }
 
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
 
-    if (Math.floor(Date.now()/ 1000) >= resetTime + 15) { // after 15 seconds has passed
+    if (Math.floor(Date.now()/ 1000) >= resetTime + SLEEP_TIME) { // after 15 seconds has passed
         const txReceipt = await sendAATxViaPaymaster(txParams)
         await txReceipt.wait()
     }
@@ -406,7 +408,7 @@ before(async () => {
     const txReceipt0 = await sendAATxViaPaymaster(txParams0)
     await expect(txReceipt0.wait()).to.be.reverted
 
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
 
     // Increase Limit
     let tx1 = await spendingManager.populateTransaction.setSpendingLimit(account.address, ETH_ADDRESS, toBN("15"))
@@ -433,7 +435,7 @@ before(async () => {
 
     await consoleLimit(limit)
     await getBalances()
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
 
   })
 
@@ -450,7 +452,7 @@ before(async () => {
     const txReceipt0 = await sendAATxViaPaymaster(txParams0)
     await expect(txReceipt0.wait()).to.be.reverted
 
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
 
     // Increase Limit
     let tx1 = await spendingManager.populateTransaction.removeSpendingLimit(account.address, ETH_ADDRESS)
@@ -477,7 +479,7 @@ before(async () => {
 
     await consoleLimit(limit)
     await getBalances()
-    await utils.sleep(SLEEP_TIME); 
+    await utils.sleep(SLEEP_TIME * 1000); 
 
   })
 
