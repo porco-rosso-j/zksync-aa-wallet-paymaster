@@ -10,7 +10,7 @@ An implementation of zkSync's account abstraction and paymaster with a batched t
 ## Developments
 
 ### Account
-zkSync Account Abstraction contract wallet. Architecture is inspired by Gnosis Safe.
+zkSync Account Abstraction contract wallet. Architecture is inspired by Gnosis Safe. `Account.sol` and `BaseAccount.sol`.
 
 #### Batch transaction 
 `Account.sol` has multicall feature so that it can facilitate batched transactions with `_executeBatchTransaction` where for-loop utilizes `targets[]` and `methods[]` data which respectively store contract addresses and functions. As such, in a batched transaction, msg.data isn't single hexlified method data but a batched multiple transaction data encoded with AbiCoder.encode() method. 
@@ -22,7 +22,7 @@ As zksync-unique `approvalBased` paymaster flow is supported, `MyPaymaster.sol` 
 The daily-spending limit feature can be enabled for the account, where it refuses the account to spend in ETH/ERC20 more than a configured limit amount. 
 
 
-*Currently, deployment and test in this repo are depreciated*
+!*Currently, deployment and test in the main branch are depreciated*
 
 ## Deployment & Test
 
