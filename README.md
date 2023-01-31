@@ -22,7 +22,7 @@ As zksync-unique `approvalBased` paymaster flow is supported, `MyPaymaster.sol` 
 The daily-spending limit feature can be enabled for the account, where it refuses the account to spend in ETH/ERC20 more than a configured limit amount. 
 
 
-!*Currently, deployment and test in the main branch are depreciated*
+!*Currently, deploy and test folders in this repo don't work as they haven't been updated for new contracts*
 
 ## Deployment & Test
 
